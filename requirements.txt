@@ -4,4 +4,3 @@ langchain-community==0.2.10
 langchain-ibm==0.1.11
 chromadb
 pypdf
-pydantic==2.10.6
