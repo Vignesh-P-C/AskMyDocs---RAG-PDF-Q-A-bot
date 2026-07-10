@@ -5,4 +5,3 @@ langchain-ibm==0.1.11
 chromadb
 pypdf
 pydantic==2.10.6
-huggingface_hub==0.23.0
