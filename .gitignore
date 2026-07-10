@@ -1,0 +1,7 @@
+my_env/
+__pycache__/
+*.pyc
+.theia/
+*.pdf
+chroma_db/
+.DS_Store
