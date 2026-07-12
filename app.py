@@ -12,6 +12,15 @@ from langchain.chains import RetrievalQA
 from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
 from ibm_watsonx_ai.metanames import EmbedTextParamsMetaNames as EmbedParams
 
+import spaces
+
+@spaces.GPU
+def _gpu_placeholder():
+    """Satisfies Hugging Face ZeroGPU's startup requirement.
+    This app doesn't use local GPU — all inference runs remotely via
+    the IBM watsonx.ai API — but ZeroGPU Spaces require at least one
+    @spaces.GPU-decorated function to exist at startup."""
+    pass
 
 # ---------- 1. LLM SETUP ----------
 def get_llm():
