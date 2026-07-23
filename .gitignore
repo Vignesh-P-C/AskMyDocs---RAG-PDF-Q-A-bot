@@ -1,4 +1,6 @@
 my_env/
+venv/
+.venv/
 __pycache__/
 *.pyc
 .theia/

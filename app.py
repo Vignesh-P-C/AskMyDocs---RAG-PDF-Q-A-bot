@@ -9,16 +9,18 @@
 # (See .env.example for a reference template.)
 
 import os
+from dotenv import load_dotenv
+load_dotenv()
 import gradio as gr
 import spaces
 
-from langchain_huggingface import HuggingFaceEndpoint, HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEndpoint, ChatHuggingFace, HuggingFaceEmbeddings
 from langchain_community.document_loaders import PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
-from langchain.chains import RetrievalQA
-from langchain.prompts import PromptTemplate
-
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import PromptTemplate
 
 def _require_env(name):
     value = os.environ.get(name)
@@ -42,17 +44,17 @@ def _gpu_placeholder():
 
 # ---------- 1. LLM SETUP ----------
 def get_llm():
-    llm = HuggingFaceEndpoint(
-        repo_id="microsoft/Phi-3-mini-4k-instruct",
+    base_llm = HuggingFaceEndpoint(
+        repo_id="openai/gpt-oss-120b",
         task="text-generation",
         max_new_tokens=256,
         temperature=0.5,
         do_sample=True,
         repetition_penalty=1.03,
-        provider="auto",  # let Hugging Face route to an available Inference Provider
+        provider="auto",
         huggingfacehub_api_token=_require_env("HUGGINGFACEHUB_API_TOKEN"),
     )
-    return llm
+    return ChatHuggingFace(llm=base_llm)
 
 # ---------- 2. DOCUMENT LOADER ----------
 def document_loader(file):
@@ -110,18 +112,22 @@ Answer:""",
     input_variables=["context", "question"],
 )
 
+def format_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs)
+
 def retriever_qa(file, query):
     llm = get_llm()
     retriever_obj = retriever(file)
-    qa = RetrievalQA.from_chain_type(
-        llm=llm,
-        chain_type="stuff",
-        retriever=retriever_obj,
-        return_source_documents=False,
-        chain_type_kwargs={"prompt": qa_prompt},
+
+    rag_chain = (
+        {"context": retriever_obj | format_docs, "question": RunnablePassthrough()}
+        | qa_prompt
+        | llm
+        | StrOutputParser()
     )
-    response = qa.invoke(query)
-    return response["result"]
+
+    response = rag_chain.invoke(query)
+    return response
 
 # ---------- 8. GRADIO INTERFACE ----------
 rag_application = gr.Interface(
