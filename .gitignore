@@ -5,3 +5,4 @@ __pycache__/
 *.pdf
 chroma_db/
 .DS_Store
+.env
