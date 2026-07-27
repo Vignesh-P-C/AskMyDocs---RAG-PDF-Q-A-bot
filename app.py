@@ -88,8 +88,21 @@ def text_splitter(data):
 
 # ---------- 4. EMBEDDING MODEL ----------
 def hf_embedding():
-    # Runs locally on the Space's CPU — no API call, no Inference credits spent.
-    return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    # Runs locally on CPU — no API call, no Inference credits spent.
+    #
+    # device="cpu" is forced explicitly (not left to auto-detection).
+    # On a ZeroGPU Space, torch.cuda.is_available() reports True even
+    # outside an @spaces.GPU-decorated function (that's how ZeroGPU's
+    # emulation works), so without this, sentence-transformers silently
+    # tries to place the model on "cuda" and crashes with:
+    #   "Low-level CUDA init (torch._C._cuda_init) reached... did not
+    #    intercept a CUDA operation"
+    # This didn't show up locally because a plain CPU-only machine never
+    # reports CUDA as available in the first place.
+    return HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2",
+        model_kwargs={"device": "cpu"},
+    )
 
 
 # ---------- 5. VECTOR STORE ----------
