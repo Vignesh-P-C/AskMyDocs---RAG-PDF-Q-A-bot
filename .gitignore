@@ -1,6 +1,5 @@
 my_env/
 venv/
-.venv/
 __pycache__/
 *.pyc
 .theia/
@@ -8,3 +7,10 @@ __pycache__/
 chroma_db/
 .DS_Store
 .env
+backend/venv/
+backend/.env
+backend/__pycache__/
+frontend/node_modules/
+frontend/.env.local
+frontend/dist/
+.gradio/

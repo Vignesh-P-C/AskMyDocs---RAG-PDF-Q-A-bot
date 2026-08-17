@@ -155,7 +155,7 @@ def index_document(file):
         docs = document_loader(file)
         chunks = text_splitter(docs)
         vectordb = vector_database(chunks)
-        retriever_obj = vectordb.as_retriever()
+        retriever_obj = vectordb.as_retriever(search_kwargs={"k": 8})
         filename = os.path.basename(file.name)
         status = (
             f"**{filename}** indexed — {len(docs)} page(s), {len(chunks)} chunk(s). "
